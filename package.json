@@ -1,0 +1,25 @@
+{
+  "name": "bondcredit-volatility-rebalancer",
+  "version": "0.1.0",
+  "description": "Volatility-aware vault rebalancer for BondCredit using Hedera Agent Kit",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "keywords": [
+    "hedera",
+    "agent-kit",
+    "defi",
+    "volatility",
+    "rebalancer",
+    "bondcredit"
+  ],
+  "author": "bond.credit team",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "node-cron": "^3.0.3"
+  }
+}

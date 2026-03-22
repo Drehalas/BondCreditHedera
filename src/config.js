@@ -23,8 +23,11 @@ export const config = {
   },
   oracle: {
     provider: process.env.ORACLE_PROVIDER || "mock",
+    apiUrl: process.env.SUPRA_API_URL || "",
+    apiKey: process.env.SUPRA_API_KEY || "",
     pair: process.env.SUPRA_PAIR || "HBAR-USDC",
-    interval: process.env.SUPRA_INTERVAL || "1h"
+    interval: process.env.SUPRA_INTERVAL || "1h",
+    timeoutMs: toNumber(process.env.SUPRA_TIMEOUT_MS, 5000)
   },
   decision: {
     thresholds: {
@@ -68,6 +71,10 @@ export function assertRequiredConfig() {
   if (!config.hedera.accountId) missing.push("HEDERA_ACCOUNT_ID");
   if (!config.hedera.privateKey) missing.push("HEDERA_PRIVATE_KEY");
   if (!config.bonzo.vaultId) missing.push("BONZO_VAULT_ID");
+
+  if (config.oracle.provider === "supra" && !config.oracle.apiUrl) {
+    missing.push("SUPRA_API_URL");
+  }
 
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(", ")}`);

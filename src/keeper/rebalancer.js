@@ -21,7 +21,22 @@ export class VolatilityAwareRebalancer {
   }
 
   async tick() {
-    const volatility = await this.volatilityService.getVolatilityPercent();
+    let volatility;
+    try {
+      volatility = await this.volatilityService.getVolatilityPercent();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.warn("Volatility unavailable, skipping tick", { message });
+      await this.#emit({
+        volatility: null,
+        action: null,
+        executed: false,
+        skipReason: "volatility_unavailable",
+        error: message
+      });
+      return;
+    }
+
     const action = determineAction(volatility);
 
     logger.info("Decision computed", { volatility, action });

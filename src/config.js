@@ -11,7 +11,8 @@ export const config = {
   app: {
     name: "bondcredit-volatility-rebalancer",
     minActionIntervalSeconds: toNumber(process.env.MIN_ACTION_INTERVAL_SECONDS, 600),
-    rebalancerCron: process.env.REBALANCE_CRON || "*/5 * * * *"
+    rebalancerCron: process.env.REBALANCE_CRON || "*/5 * * * *",
+    mode: process.env.AGENT_MODE || "demo"
   },
   hedera: {
     network: process.env.HEDERA_NETWORK || "testnet",
@@ -68,10 +69,12 @@ export const config = {
 export function assertRequiredConfig() {
   const missing = [];
 
-  // Hedera + Bonzo credentials are optional for demo mode
-  // Only required if you plan to execute real transactions on-chain
-  // For hackathon demo with bondcredit-demo volatility provider, these can be skipped
-  
+  // In live mode, require Hedera credentials
+  if (config.app.mode === "live") {
+    if (!config.hedera.accountId) missing.push("HEDERA_ACCOUNT_ID");
+    if (!config.hedera.privateKey) missing.push("HEDERA_PRIVATE_KEY");
+  }
+
   if (config.oracle.provider === "supra" && !config.oracle.apiUrl) {
     missing.push("SUPRA_API_URL");
   }
@@ -80,17 +83,11 @@ export function assertRequiredConfig() {
     throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
   }
 
-  // Log demo mode info
-  if (!config.hedera.accountId || !config.hedera.privateKey) {
+  // Log mode info
+  if (config.app.mode === "demo") {
     console.log(
-      "[DEMO MODE] Hedera credentials not set. Running in simulation mode. " +
-      "Set HEDERA_ACCOUNT_ID and HEDERA_PRIVATE_KEY to enable testnet execution."
-    );
-  }
-  if (!config.bonzo.vaultId) {
-    console.log(
-      "[DEMO MODE] Bonzo vault ID not set. Running in simulation mode. " +
-      "Set BONZO_VAULT_ID to enable vault interactions."
+      "[AGENT] Running in DEMO mode. Hedera operations are simulated. " +
+      "Set AGENT_MODE=live and provide HEDERA credentials to enable testnet execution."
     );
   }
 }

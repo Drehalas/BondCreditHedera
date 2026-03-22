@@ -52,6 +52,14 @@ async function main() {
   const hedera = new HederaAgentKitClient();
   await hedera.init();
 
+  logger.info("Agent identity initialized", {
+    mode: config.app.mode,
+    network: config.hedera.network,
+    accountId: hedera.isLive() ? config.hedera.accountId : "(demo)",
+    skillName: config.registry.skillName,
+    registryEnabled: config.registry.enabled
+  });
+
   let registry = null;
   if (config.registry.enabled) {
     const registryClient = new RegistryBrokerClient({

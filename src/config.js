@@ -37,6 +37,28 @@ export const config = {
       maintain: { lowerTickOffset: -120, upperTickOffset: 120 },
       wide: { lowerTickOffset: -220, upperTickOffset: 220 }
     }
+  },
+  /**
+   * HOL Universal Agentic Registry (Hashgraph Online Registry Broker).
+   * @see https://hol.org/registry
+   */
+  registry: {
+    enabled: (() => {
+      if (process.env.REGISTRY_ENABLED === "false") return false;
+      if (process.env.REGISTRY_ENABLED === "true") return true;
+      return Boolean(process.env.REGISTRY_BROKER_API_KEY?.trim());
+    })(),
+    apiKey: process.env.REGISTRY_BROKER_API_KEY || "",
+    baseUrl: (process.env.REGISTRY_BROKER_API_URL || "https://hol.org/registry/api/v1").replace(
+      /\/+$/,
+      ""
+    ),
+    /** Your agent UAID when registered (e.g. uaid:aid:...) */
+    agentUaid: process.env.AGENT_UAID || "",
+    /** Published skill name (HCS-26 / OpenClaw) */
+    skillName: process.env.SKILL_NAME || "volatility-aware-rebalancer",
+    /** Run one registry search on startup (discovery demo) */
+    discoverOnStartup: process.env.REGISTRY_DISCOVER_ON_STARTUP === "true"
   }
 };
 

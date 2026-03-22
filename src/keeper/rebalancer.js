@@ -6,11 +6,18 @@ import {
 import { logger } from "../logger.js";
 
 export class VolatilityAwareRebalancer {
-  constructor({ volatilityService, vaultClient, minActionIntervalSeconds }) {
+  constructor({ volatilityService, vaultClient, minActionIntervalSeconds, onAfterTick }) {
     this.volatilityService = volatilityService;
     this.vaultClient = vaultClient;
     this.minActionIntervalMs = minActionIntervalSeconds * 1000;
     this.lastActionAt = 0;
+    this.onAfterTick = typeof onAfterTick === "function" ? onAfterTick : null;
+  }
+
+  async #emit(payload) {
+    if (this.onAfterTick) {
+      await this.onAfterTick(payload);
+    }
   }
 
   async tick() {
@@ -21,11 +28,23 @@ export class VolatilityAwareRebalancer {
 
     if (action === RebalanceAction.MAINTAIN) {
       logger.info("No range change needed");
+      await this.#emit({
+        volatility,
+        action,
+        executed: false,
+        skipReason: "maintain"
+      });
       return;
     }
 
     if (!this.#cooldownElapsed()) {
       logger.info("Cooldown active, skipping state-changing action");
+      await this.#emit({
+        volatility,
+        action,
+        executed: false,
+        skipReason: "cooldown"
+      });
       return;
     }
 
@@ -34,6 +53,12 @@ export class VolatilityAwareRebalancer {
         reason: `volatility ${volatility}% exceeded emergency threshold`
       });
       this.lastActionAt = Date.now();
+      await this.#emit({
+        volatility,
+        action,
+        executed: true,
+        skipReason: null
+      });
       return;
     }
 
@@ -47,6 +72,14 @@ export class VolatilityAwareRebalancer {
     });
 
     this.lastActionAt = Date.now();
+    await this.#emit({
+      volatility,
+      action,
+      executed: true,
+      skipReason: null,
+      lowerTick: currentTick + offsets.lowerTickOffset,
+      upperTick: currentTick + offsets.upperTickOffset
+    });
   }
 
   #cooldownElapsed() {

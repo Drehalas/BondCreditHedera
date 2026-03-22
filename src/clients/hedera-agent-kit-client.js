@@ -9,7 +9,7 @@ export class HederaAgentKitClient {
 
   async init() {
     // Replace with real Hedera Agent Kit initialization once dependency is added.
-    logger.info("Initialized Hedera Agent Kit client", {
+    logger.info("Initialized Hedera Agent Kit client (volatility-aware-rebalancer)", {
       network: this.network,
       accountId: this.accountId
     });

@@ -9,7 +9,9 @@
     "dev": "node --watch src/index.js",
     "frontend:dev": "npm --prefix frontend run dev",
     "frontend:build": "npm --prefix frontend run build",
-    "frontend:preview": "npm --prefix frontend run preview"
+    "frontend:preview": "npm --prefix frontend run preview",
+    "registry:proxy": "node server/registry-ui-proxy.mjs",
+    "dev:web": "concurrently -n proxy,ui -c cyan,magenta \"npm run registry:proxy\" \"npm run frontend:dev\""
   },
   "keywords": [
     "hedera",
@@ -24,5 +26,8 @@
   "dependencies": {
     "dotenv": "^16.4.7",
     "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
   }
 }

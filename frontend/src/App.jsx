@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { RegistryChatbot } from "./components/RegistryChatbot";
 import { actionLabel, defaultThresholds } from "./lib/decision";
 import { buildInitialHistory, generateVolatilitySnapshot } from "./services/mockFeed";
 
@@ -67,8 +68,17 @@ export default function App() {
       </motion.header>
 
       <main className="grid">
+        <motion.div
+          className="registry-chatbot-wrap"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}
+        >
+          <RegistryChatbot />
+        </motion.div>
+
         <motion.section
-          className="card primary"
+          className="card primary dashboard-panel"
           initial={{ opacity: 0, y: 26 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.5 }}
@@ -92,7 +102,7 @@ export default function App() {
         </motion.section>
 
         <motion.section
-          className="card"
+          className="card dashboard-panel"
           initial={{ opacity: 0, y: 26 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
@@ -109,7 +119,7 @@ export default function App() {
         </motion.section>
 
         <motion.section
-          className="card"
+          className="card dashboard-panel"
           initial={{ opacity: 0, y: 26 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25, duration: 0.5 }}
@@ -129,7 +139,7 @@ export default function App() {
         </motion.section>
 
         <motion.section
-          className="card controls"
+          className="card controls dashboard-panel"
           initial={{ opacity: 0, y: 26 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}

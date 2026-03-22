@@ -54,6 +54,19 @@ export class VolatilityAgentRegistry {
     return line;
   }
 
+  async onChatAction(payload) {
+    const line = {
+      skill: SKILL_ID,
+      skillName: this.skillName,
+      agentUaid: this.agentUaid || null,
+      source: "chat",
+      ...payload
+    };
+
+    logger.info("volatility-aware-rebalancer chat-action", line);
+    return line;
+  }
+
   /**
    * Optional: discover related agents (e.g. "bonzo", "hedera defi").
    */

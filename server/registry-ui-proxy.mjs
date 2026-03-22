@@ -15,6 +15,11 @@ const BASE = (process.env.REGISTRY_BROKER_API_URL || "https://hol.org/registry/a
   ""
 );
 const API_KEY = process.env.REGISTRY_BROKER_API_KEY || "";
+const LOCAL_AGENT_CHAT = process.env.LOCAL_AGENT_CHAT === "true";
+const LOCAL_AGENT_BASE = (process.env.LOCAL_AGENT_BASE || "http://127.0.0.1:3000").replace(
+  /\/+$/,
+  ""
+);
 const PROXY_ID = "bondcredit-registry-ui-proxy/1.1";
 
 function markResponse(res) {
@@ -77,7 +82,8 @@ async function readBody(req) {
 }
 
 async function brokerFetch(path, { method = "GET", body = null, useAuth = false } = {}) {
-  const url = `${BASE}${path.startsWith("/") ? path : `/${path}`}`;
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const url = `${BASE}${normalizedPath}`;
   const headers = { Accept: "application/json" };
   if (body !== null) {
     headers["Content-Type"] = "application/json";
@@ -86,11 +92,42 @@ async function brokerFetch(path, { method = "GET", body = null, useAuth = false 
     headers["x-api-key"] = API_KEY;
   }
 
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: body !== null ? JSON.stringify(body) : undefined
-  });
+  const requestOptions = { method, headers };
+  if (body === null) {
+    requestOptions.body = undefined;
+  } else {
+    requestOptions.body = JSON.stringify(body);
+  }
+
+  const res = await fetch(url, requestOptions);
+
+  const text = await res.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = { raw: text };
+  }
+
+  return { ok: res.ok, status: res.status, data };
+}
+
+async function localAgentFetch(path, { method = "GET", body = null } = {}) {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const url = `${LOCAL_AGENT_BASE}${normalizedPath}`;
+  const headers = { Accept: "application/json" };
+  if (body !== null) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const requestOptions = { method, headers };
+  if (body === null) {
+    requestOptions.body = undefined;
+  } else {
+    requestOptions.body = JSON.stringify(body);
+  }
+
+  const res = await fetch(url, requestOptions);
 
   const text = await res.text();
   let data;
@@ -175,7 +212,9 @@ const server = http.createServer(async (req, res) => {
       json(res, 200, {
         ok: true,
         hasApiKey: Boolean(API_KEY),
-        baseUrl: BASE
+        baseUrl: BASE,
+        localAgentChat: LOCAL_AGENT_CHAT,
+        localAgentBase: LOCAL_AGENT_BASE
       });
       return;
     }
@@ -196,6 +235,29 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (pathname === "/api/registry/chat/session" && req.method === "POST") {
+      if (LOCAL_AGENT_CHAT) {
+        const raw = await readBody(req);
+        const body = raw ? JSON.parse(raw) : {};
+        const out = await localAgentFetch("/api/agent/chat/session", {
+          method: "POST",
+          body
+        });
+
+        if (out.status === 404) {
+          json(res, 503, {
+            error: "local_agent_unavailable",
+            message:
+              "Local agent chat endpoint not found. Ensure backend is restarted with latest code and running on LOCAL_AGENT_BASE.",
+            localAgentBase: LOCAL_AGENT_BASE,
+            expectedPath: "/api/agent/chat/session"
+          });
+          return;
+        }
+
+        json(res, out.ok ? 200 : out.status, out.data ?? { error: "unknown" });
+        return;
+      }
+
       if (!API_KEY) {
         json(res, 200, {
           error: "missing_registry_key",
@@ -215,6 +277,29 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (pathname === "/api/registry/chat/message" && req.method === "POST") {
+      if (LOCAL_AGENT_CHAT) {
+        const raw = await readBody(req);
+        const body = raw ? JSON.parse(raw) : {};
+        const out = await localAgentFetch("/api/agent/chat/message", {
+          method: "POST",
+          body
+        });
+
+        if (out.status === 404) {
+          json(res, 503, {
+            error: "local_agent_unavailable",
+            message:
+              "Local agent chat endpoint not found. Ensure backend is restarted with latest code and running on LOCAL_AGENT_BASE.",
+            localAgentBase: LOCAL_AGENT_BASE,
+            expectedPath: "/api/agent/chat/message"
+          });
+          return;
+        }
+
+        json(res, out.ok ? 200 : out.status, out.data ?? { error: "unknown" });
+        return;
+      }
+
       if (!API_KEY) {
         json(res, 200, {
           error: "missing_registry_key",

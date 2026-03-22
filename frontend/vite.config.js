@@ -23,16 +23,24 @@ const registryProxy = {
   }
 };
 
+/** Volatility API proxy — routes to backend keeper (:3000) */
+const volatilityProxy = {
+  "/api/volatility": {
+    target: "http://127.0.0.1:3000",
+    changeOrigin: true
+  }
+};
+
 export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
-    proxy: registryProxy
+    proxy: { ...registryProxy, ...volatilityProxy }
   },
   preview: {
     host: true,
     port: 4173,
     strictPort: false,
-    proxy: registryProxy
+    proxy: { ...registryProxy, ...volatilityProxy }
   }
 });

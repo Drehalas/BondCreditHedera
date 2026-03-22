@@ -68,15 +68,29 @@ export const config = {
 export function assertRequiredConfig() {
   const missing = [];
 
-  if (!config.hedera.accountId) missing.push("HEDERA_ACCOUNT_ID");
-  if (!config.hedera.privateKey) missing.push("HEDERA_PRIVATE_KEY");
-  if (!config.bonzo.vaultId) missing.push("BONZO_VAULT_ID");
-
+  // Hedera + Bonzo credentials are optional for demo mode
+  // Only required if you plan to execute real transactions on-chain
+  // For hackathon demo with bondcredit-demo volatility provider, these can be skipped
+  
   if (config.oracle.provider === "supra" && !config.oracle.apiUrl) {
     missing.push("SUPRA_API_URL");
   }
 
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
+  }
+
+  // Log demo mode info
+  if (!config.hedera.accountId || !config.hedera.privateKey) {
+    console.log(
+      "[DEMO MODE] Hedera credentials not set. Running in simulation mode. " +
+      "Set HEDERA_ACCOUNT_ID and HEDERA_PRIVATE_KEY to enable testnet execution."
+    );
+  }
+  if (!config.bonzo.vaultId) {
+    console.log(
+      "[DEMO MODE] Bonzo vault ID not set. Running in simulation mode. " +
+      "Set BONZO_VAULT_ID to enable vault interactions."
+    );
   }
 }

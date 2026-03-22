@@ -16,11 +16,19 @@ export class VolatilityService {
     this.pair = pair;
     this.interval = interval;
     this.timeoutMs = timeoutMs;
+    
+    // State for bondcredit-demo provider (realistic trending volatility)
+    this.demoVolatility = 20;
+    this.demoTrend = Math.random() > 0.5 ? 1 : -1;
   }
 
   async getVolatilityPercent() {
     if (this.oracleProvider === "mock") {
       return this.#mockVolatility();
+    }
+
+    if (this.oracleProvider === "bondcredit-demo") {
+      return this.#bondcreditDemoVolatility();
     }
 
     if (this.oracleProvider === "supra") {
@@ -128,6 +136,45 @@ export class VolatilityService {
     }
 
     return null;
+  }
+
+  #bondcreditDemoVolatility() {
+    // Realistic trending volatility with occasional spikes (for hackathon demo)
+    
+    // 5% chance of spike (volatility jump)
+    if (Math.random() < 0.05) {
+      const spike = 15 + Math.random() * 30;
+      this.demoVolatility = Math.max(5, Math.min(70, this.demoVolatility + spike));
+    } else {
+      // Trending movement: small random walk with mean reversion
+      const drift = this.demoTrend * (0.5 + Math.random() * 2);
+      this.demoVolatility += drift;
+      
+      // Mean reversion to 25%
+      if (this.demoVolatility > 40) {
+        this.demoTrend = -1; // reverse trend
+        this.demoVolatility -= Math.random() * 2;
+      } else if (this.demoVolatility < 15) {
+        this.demoTrend = 1; // reverse trend
+        this.demoVolatility += Math.random() * 2;
+      }
+      
+      // 2% chance to reverse trend naturally
+      if (Math.random() < 0.02) {
+        this.demoTrend *= -1;
+      }
+    }
+    
+    // Clamp to realistic range
+    this.demoVolatility = Math.max(5, Math.min(70, this.demoVolatility));
+    
+    logger.info("Generated demo volatility (hackathon mode)", {
+      provider: "bondcredit-demo",
+      volatility: Number(this.demoVolatility.toFixed(2)),
+      trend: this.demoTrend
+    });
+    
+    return Number(this.demoVolatility.toFixed(2));
   }
 
   async #mockVolatility() {

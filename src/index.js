@@ -1,4 +1,5 @@
 import cron from "node-cron";
+import http from "node:http";
 import { assertRequiredConfig, config } from "./config.js";
 import { HederaAgentKitClient } from "./clients/hedera-agent-kit-client.js";
 import { BonzoVaultClient } from "./clients/bonzo-vault-client.js";
@@ -10,6 +11,43 @@ import { logger } from "./logger.js";
 
 async function main() {
   assertRequiredConfig();
+
+  // Shared state for latest volatility tick (accessible via HTTP API)
+  const latestTick = {
+    timestamp: new Date().toISOString(),
+    volatility: null,
+    action: null,
+    executed: false,
+    skipReason: null
+  };
+
+  // HTTP API server for frontend polling
+  const apiServer = http.createServer((req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Content-Type", "application/json");
+
+    if (req.method === "OPTIONS") {
+      res.writeHead(200);
+      res.end();
+      return;
+    }
+
+    if (req.url === "/api/volatility" && req.method === "GET") {
+      res.writeHead(200);
+      res.end(JSON.stringify(latestTick));
+      return;
+    }
+
+    res.writeHead(404);
+    res.end(JSON.stringify({ error: "Not found" }));
+  });
+
+  const apiPort = Number(process.env.API_PORT || 3000);
+  apiServer.listen(apiPort, () => {
+    logger.info("Volatility API server listening", { port: apiPort, endpoint: "/api/volatility" });
+  });
 
   const hedera = new HederaAgentKitClient();
   await hedera.init();
@@ -35,15 +73,26 @@ async function main() {
     volatilityService,
     vaultClient,
     minActionIntervalSeconds: config.app.minActionIntervalSeconds,
-    onAfterTick: registry
-      ? (payload) => registry.onRebalancerTick(payload)
-      : undefined
+    onAfterTick: async (payload) => {
+      // Update shared state for API endpoint
+      latestTick.timestamp = new Date().toISOString();
+      latestTick.volatility = payload.volatility;
+      latestTick.action = payload.action;
+      latestTick.executed = payload.executed;
+      latestTick.skipReason = payload.skipReason;
+
+      // Also emit to registry if enabled
+      if (registry) {
+        await registry.onRebalancerTick(payload);
+      }
+    }
   });
 
   logger.info("Starting volatility-aware-rebalancer", {
     cron: config.app.rebalancerCron,
     skill: config.registry.skillName,
-    registry: Boolean(registry)
+    registry: Boolean(registry),
+    apiEndpoint: `http://localhost:${apiPort}/api/volatility`
   });
 
   cron.schedule(config.app.rebalancerCron, async () => {

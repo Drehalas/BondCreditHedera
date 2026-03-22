@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { RegistryChatbot } from "./components/RegistryChatbot";
 import { actionLabel, defaultThresholds } from "./lib/decision";
@@ -29,6 +29,7 @@ function thresholdText(volatility) {
 export default function App() {
   const [history, setHistory] = useState(() => buildInitialHistory(16));
   const [refreshSeconds, setRefreshSeconds] = useState(5);
+  const [connected, setConnected] = useState(false);
 
   const latest = history[history.length - 1];
 
@@ -44,12 +45,39 @@ export default function App() {
     [history]
   );
 
-  const pushSnapshot = () => {
-    setHistory((prev) => {
-      const snapshot = generateVolatilitySnapshot(prev[prev.length - 1]?.volatility || 24);
-      return [...prev.slice(-23), snapshot];
-    });
-  };
+  // Poll backend API for real volatility data
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch("/api/volatility");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
+        const tick = await response.json();
+        setConnected(true);
+        
+        // Add to history if volatility is available
+        if (tick.volatility !== null) {
+          setHistory((prev) => {
+            const snapshot = {
+              timestamp: tick.timestamp,
+              volatility: tick.volatility,
+              action: tick.action || "maintain"
+            };
+            return [...prev.slice(-23), snapshot];
+          });
+        }
+      } catch (error) {
+        setConnected(false);
+        // Fallback to mock data on error
+        setHistory((prev) => {
+          const snapshot = generateVolatilitySnapshot(prev[prev.length - 1]?.volatility || 24);
+          return [...prev.slice(-23), snapshot];
+        });
+      }
+    }, refreshSeconds * 1000);
+
+    return () => clearInterval(interval);
+  }, [refreshSeconds]);
 
   return (
     <div className="app-shell">
@@ -60,7 +88,18 @@ export default function App() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <p className="kicker">Hedera Agent Kit · BondCredit</p>
+        <p className="kicker">
+          Hedera Agent Kit · BondCredit
+          {" "}
+          <span style={{ 
+            display: "inline-block", 
+            marginLeft: "12px",
+            width: "8px", 
+            height: "8px", 
+            borderRadius: "50%", 
+            backgroundColor: connected ? "#10b981" : "#ef4444"
+          }} title={connected ? "Connected to backend" : "Using mock data"} />
+        </p>
         <h1>Volatility Command Deck</h1>
         <p className="hero-sub">
           Production-facing operator console for volatility-aware Bonzo vault rebalancing.
@@ -144,9 +183,9 @@ export default function App() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          <h2>Simulation Controls</h2>
+          <h2>Polling Controls</h2>
           <label className="field">
-            Auto-check interval (seconds)
+            Refresh interval (seconds)
             <input
               type="number"
               min={1}
@@ -155,22 +194,16 @@ export default function App() {
               onChange={(event) => setRefreshSeconds(Number(event.target.value))}
             />
           </label>
-          <div className="actions">
-            <button type="button" onClick={pushSnapshot}>Run Single Check</button>
-            <button
-              type="button"
-              className="ghost"
-              onClick={() => {
-                const timer = setInterval(pushSnapshot, refreshSeconds * 1000);
-                setTimeout(() => clearInterval(timer), refreshSeconds * 5000);
-              }}
-            >
-              Simulate 5 Cycles
-            </button>
-          </div>
           <p className="muted">
-            This UI is currently connected to a mock feed. Wire it to the keeper API to view live
-            Hedera execution state.
+            {connected ? (
+              <>
+                ✓ Live connection to backend keeper at <code>http://localhost:3000/api/volatility</code>
+              </>
+            ) : (
+              <>
+                ⚠ Connection failed. Using fallback mock data. Start backend: <code>npm start</code>
+              </>
+            )}
           </p>
         </motion.section>
       </main>

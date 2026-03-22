@@ -30,6 +30,9 @@ export const config = {
     interval: process.env.SUPRA_INTERVAL || "1h",
     timeoutMs: toNumber(process.env.SUPRA_TIMEOUT_MS, 5000)
   },
+  storage: {
+    decisionHistoryPath: process.env.DECISION_HISTORY_PATH || "./data/decision-history.jsonl"
+  },
   decision: {
     thresholds: {
       tightenMax: 15,

@@ -7,6 +7,7 @@ import { RegistryBrokerClient } from "./clients/registry-broker-client.js";
 import { VolatilityService } from "./services/volatility-service.js";
 import { VolatilityAgentRegistry } from "./services/volatility-agent-registry.js";
 import { AgentChatRouter } from "./services/agent-chat-router.js";
+import { DecisionHistoryStore } from "./services/decision-history-store.js";
 import { VolatilityAwareRebalancer } from "./keeper/rebalancer.js";
 import { logger } from "./logger.js";
 
@@ -23,6 +24,36 @@ async function main() {
   };
 
   const chatSessions = new Map();
+  const idempotencyResults = new Map();
+  const actionJournal = [];
+  const historyStore = new DecisionHistoryStore({
+    filePath: config.storage.decisionHistoryPath
+  });
+  await historyStore.init();
+
+  const JOURNAL_LIMIT = 200;
+
+  const pushActionRecord = (record) => {
+    const entry = {
+      timestamp: new Date().toISOString(),
+      ...record
+    };
+
+    actionJournal.push(entry);
+
+    while (actionJournal.length > JOURNAL_LIMIT) {
+      actionJournal.shift();
+    }
+
+    // Fire-and-forget persistence to keep tick loop responsive.
+    historyStore.append(entry).catch((error) => {
+      logger.warn("Decision history append failed", {
+        message: error instanceof Error ? error.message : String(error)
+      });
+    });
+  };
+
+  const isWriteIntent = (intent) => intent === "adjust_range" || intent === "withdraw_to_staking";
 
   const sendJson = (res, statusCode, body) => {
     res.writeHead(statusCode, { "Content-Type": "application/json" });
@@ -93,6 +124,28 @@ async function main() {
       return sendJson(res, 200, latestTick);
     }
 
+    if (parsed.pathname === "/api/agent/actions/latest" && req.method === "GET") {
+      const limitRaw = Number(parsed.searchParams.get("limit") || 20);
+      const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(100, Math.trunc(limitRaw))) : 20;
+      historyStore
+        .listRecent(limit)
+        .then((items) => {
+          sendJson(res, 200, {
+            ok: true,
+            count: items.length,
+            items
+          });
+        })
+        .catch((error) => {
+          sendJson(res, 500, {
+            ok: false,
+            error: "history_read_failed",
+            message: error instanceof Error ? error.message : String(error)
+          });
+        });
+      return;
+    }
+
     if (parsed.pathname === "/api/agent/chat/session" && req.method === "POST") {
       readBody(req)
         .then(async (body) => {
@@ -119,6 +172,25 @@ async function main() {
           let sid = String(body.sessionId || "").trim();
           const message = String(body.message || "").trim();
           const requestId = body.requestId ? String(body.requestId) : null;
+          const intent = chatRouter.peekIntent(message);
+
+          if (requestId && isWriteIntent(intent) && idempotencyResults.has(requestId)) {
+            const cached = idempotencyResults.get(requestId);
+            const replay = {
+              ...cached,
+              idempotentReplay: true
+            };
+            pushActionRecord({
+              source: "chat",
+              intent,
+              requestId,
+              mode: replay.mode || config.app.mode,
+              status: replay.ok ? "SUCCESS" : "FAILED",
+              idempotentReplay: true,
+              txId: replay?.result?.tx?.txId || null
+            });
+            return sendJson(res, replay.ok ? 200 : 400, replay);
+          }
 
           if (!sid || !chatSessions.has(sid)) {
             const session = await chatRouter.openSession({ uaid: body.uaid || null });
@@ -141,6 +213,20 @@ async function main() {
             sessionId: sid,
             message,
             requestId
+          });
+
+          if (requestId && isWriteIntent(intent)) {
+            idempotencyResults.set(requestId, result);
+          }
+
+          pushActionRecord({
+            source: "chat",
+            intent,
+            requestId,
+            mode: result.mode || config.app.mode,
+            status: result.ok ? "SUCCESS" : "FAILED",
+            txId: result?.result?.tx?.txId || null,
+            error: result.ok ? null : result.message || result.error || null
           });
 
           sendJson(res, result.ok ? 200 : 400, result);
@@ -175,6 +261,18 @@ async function main() {
       latestTick.action = payload.action;
       latestTick.executed = payload.executed;
       latestTick.skipReason = payload.skipReason;
+
+      pushActionRecord({
+        source: "scheduler",
+        intent: payload.action || "none",
+        requestId: null,
+        mode: config.app.mode,
+        status: payload.executed ? "SUCCESS" : "SKIPPED",
+        txId: payload.txId || null,
+        error: payload.error || null,
+        volatility: payload.volatility,
+        skipReason: payload.skipReason || null
+      });
 
       // Also emit to registry if enabled
       if (registry) {

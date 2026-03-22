@@ -77,6 +77,10 @@ export class AgentChatRouter {
     };
   }
 
+  peekIntent(message) {
+    return parseIntent(message).intent;
+  }
+
   async handleMessage({ sessionId, message, requestId }) {
     const parsed = parseIntent(message);
     const mode = this.hederaClient?.isLive?.() ? "live" : "demo";

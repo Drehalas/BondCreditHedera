@@ -75,7 +75,7 @@ async function main() {
     logger.info("Registry integration disabled (set REGISTRY_BROKER_API_KEY or REGISTRY_ENABLED=true)");
   }
 
-  const vaultClient = new BonzoVaultClient();
+  const vaultClient = new BonzoVaultClient({ hederaClient: hedera });
   const volatilityService = new VolatilityService();
   const rebalancer = new VolatilityAwareRebalancer({
     volatilityService,

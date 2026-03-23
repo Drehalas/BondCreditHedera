@@ -45,6 +45,7 @@ An autonomous keeper service for `BondCredit` that monitors HBAR volatility and 
    - `HEDERA_ACCOUNT_ID`
    - `HEDERA_PRIVATE_KEY`
    - `BONZO_VAULT_ID`
+   - `SUPRA_API_KEY` (if using SupraOracles)
 4. Run:
    - `npm start`
 
@@ -97,6 +98,7 @@ Update environment settings in `.env`:
 - `REBALANCE_CRON` - schedule expression (default every 5 min)
 - `MIN_ACTION_INTERVAL_SECONDS` - cooldown between range changes
 - `SUPRA_PAIR`, `SUPRA_INTERVAL` - volatility feed target
+- `SUPRA_API_KEY`, `SUPRA_API_URL` - SupraOracles credentials
 
 ### HOL Registry (optional)
 

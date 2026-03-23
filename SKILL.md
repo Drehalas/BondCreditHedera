@@ -13,7 +13,7 @@ metadata:
         - REGISTRY_BROKER_API_KEY
         - HEDERA_ACCOUNT_ID
         - HEDERA_PRIVATE_KEY
-        - SUPRA_ORACLE_API_KEY
+        - SUPRA_API_KEY
     primaryEnv: REGISTRY_BROKER_API_KEY
 ---
 
@@ -152,7 +152,8 @@ Agent: "Subscribe to volatility alerts"
 REGISTRY_BROKER_API_KEY=   # HOL Registry key
 HEDERA_ACCOUNT_ID=         # 0.0.xxx
 HEDERA_PRIVATE_KEY=        # Ed25519 private key
-SUPRA_ORACLE_API_KEY=      # SupraOracles key
+SUPRA_API_KEY=             # SupraOracles key
+SUPRA_API_URL=             # SupraOracles API URL
 ```
 
 ### Agent Settings (`config.js`)

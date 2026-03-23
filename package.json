@@ -11,7 +11,8 @@
     "frontend:build": "npm --prefix frontend run build",
     "frontend:preview": "npm --prefix frontend run preview",
     "registry:proxy": "node server/registry-ui-proxy.mjs",
-    "dev:web": "concurrently -n proxy,ui -c cyan,magenta \"npm run registry:proxy\" \"npm run frontend:dev\""
+    "dev:web": "concurrently -n proxy,ui -c cyan,magenta \"npm run registry:proxy\" \"npm run frontend:dev\"",
+    "test": "node --test tests/"
   },
   "keywords": [
     "hedera",

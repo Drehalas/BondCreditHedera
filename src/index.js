@@ -1,5 +1,8 @@
 import cron from "node-cron";
 import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { assertRequiredConfig, config } from "./config.js";
 import { HederaAgentKitClient } from "./clients/hedera-agent-kit-client.js";
 import { BonzoVaultClient } from "./clients/bonzo-vault-client.js";
@@ -10,6 +13,18 @@ import { AgentChatRouter } from "./services/agent-chat-router.js";
 import { DecisionHistoryStore } from "./services/decision-history-store.js";
 import { VolatilityAwareRebalancer } from "./keeper/rebalancer.js";
 import { logger } from "./logger.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+function loadSkillMarkdown() {
+  try {
+    const skillPath = path.resolve(__dirname, "../SKILL.md");
+    return fs.readFileSync(skillPath, "utf8");
+  } catch {
+    return null;
+  }
+}
 
 async function main() {
   assertRequiredConfig();
@@ -58,6 +73,11 @@ async function main() {
   const sendJson = (res, statusCode, body) => {
     res.writeHead(statusCode, { "Content-Type": "application/json" });
     res.end(JSON.stringify(body));
+  };
+
+  const sendText = (res, statusCode, body, contentType = "text/plain; charset=utf-8") => {
+    res.writeHead(statusCode, { "Content-Type": contentType });
+    res.end(body);
   };
 
   const readBody = async (req) => {
@@ -122,6 +142,28 @@ async function main() {
 
     if (parsed.pathname === "/api/volatility" && req.method === "GET") {
       return sendJson(res, 200, latestTick);
+    }
+
+    if ((parsed.pathname === "/api/skill" || parsed.pathname === "/.well-known/skill.md") && req.method === "GET") {
+      const markdown = loadSkillMarkdown();
+
+      if (!markdown) {
+        return sendJson(res, 404, {
+          ok: false,
+          error: "skill_not_found",
+          message: "SKILL.md not found"
+        });
+      }
+
+      if (parsed.pathname === "/api/skill") {
+        return sendJson(res, 200, {
+          ok: true,
+          path: "SKILL.md",
+          markdown
+        });
+      }
+
+      return sendText(res, 200, markdown, "text/markdown; charset=utf-8");
     }
 
     if (parsed.pathname === "/api/agent/actions/latest" && req.method === "GET") {

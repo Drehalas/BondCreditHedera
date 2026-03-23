@@ -117,10 +117,3 @@ Update thresholds and range offsets in `src/config.js`:
 - `decision.thresholds`
 - `decision.rangePolicy`
 
-## Next integration tasks
-
-1. Replace mock volatility with SupraOracles adapter
-2. Add real Hedera Agent Kit dependency and initialization
-3. Implement Bonzo contract calls in `BonzoVaultClient`
-4. Add persistent storage for last action/decision history
-5. Add tests for decision engine and rebalancer behavior

@@ -56,7 +56,7 @@ body {
 }
 
 .app-shell {
-  padding: 6rem 4.5vw 4rem;
+  padding: 6rem 4.5vw 0;
   position: relative;
 }
 
@@ -75,12 +75,13 @@ body {
   font-weight: 600;
 }
 
-h1 {
-  margin: 0.45rem 0 0.65rem;
-  font-size: clamp(2rem, 6vw, 4rem);
-  line-height: 0.96;
+.hero h1 {                      /* Scope it to .hero to avoid affecting other h1s */
+  margin: 0.45rem 0 0.5rem;     /* Slightly less bottom margin than before */
+  font-size: clamp(1.5rem, 3vw, 2rem);   /* ← This matches the target exactly */
+  line-height: 1.1;             /* ← Tighter and more "deck-like" */
   font-weight: 800;
   color: var(--bondcredit-white);
+  letter-spacing: -0.02em;      /* Optional: subtle polish for modern feel */
 }
 
 .hero-sub {
@@ -949,4 +950,146 @@ button:disabled {
   .app-shell {
     padding: 1.3rem 1rem 2rem;
   }
+}
+
+/* ====================== PERFECT FOOTER LAYOUT ====================== */
+.site-footer {
+  /* Make background go full viewport width */
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  
+  /* or the simpler modern way (works in almost all cases): */
+  /* margin-left: -50vw; */
+  /* margin-right: -50vw; */
+  /* left: 50%; */
+  /* position: relative; */
+
+  /* Fallback safe version that usually works without hacks */
+  position: relative;
+  left: 50%;
+  right: 50%;
+  width: 100vw;
+  margin-left: -50vw;
+  margin-right: -50vw;
+
+  background: var(--bondcredit-bg2);
+  border-top: 1px solid var(--bondcredit-border);
+  
+  /* Vertical spacing */
+  padding: 3rem 0 2.5rem;
+  
+  /* Important: prevent overflow issues on very narrow screens */
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+/* Make tagline brighter & slightly larger for better readability */
+.ft-tagline {
+  color: rgba(255, 255, 255, 0.92);   /* almost white, but not harsh */
+  /* or use your theme variable if you prefer: color: var(--bondcredit-s1); */
+  
+  font-size: 0.875rem;                /* 14px – readable without being huge */
+  /* or: font-size: clamp(0.8125rem, 2.2vw, 0.95rem); for responsive scaling */
+  
+  font-weight: 400;                   /* or 500 for slightly bolder feel */
+  letter-spacing: 0.02em;             /* subtle polish */
+  margin-top: 0.5rem;                 /* 8px – softer than 6px */
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+
+/* Optional: make the copyright line match better */
+.ft-copy {
+  color: rgba(255, 255, 255, 0.70);   /* softer gray-white */
+  font-size: 0.75rem;                 /* 12px – keep small as it's secondary */
+  margin-top: 0.4rem;
+  opacity: 0.9;
+}
+
+/* If you want everything slightly brighter overall */
+.site-footer,
+.site-footer * {
+  color: rgba(255, 255, 255, 0.92);   /* subtle off-white for all text */
+}
+
+.site-footer .wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.ft {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Bottom row - Social LEFT | Legal RIGHT */
+.footer-bottom {
+  margin-top: 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--bondcredit-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;   /* ← THIS IS THE MAGIC LINE */
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.social-links {
+  display: flex;
+  gap: 1.25rem;
+  flex-shrink: 0;
+}
+
+.social-link {
+  color: var(--bondcredit-s2);
+  transition: color 0.2s ease;
+}
+
+.social-link:hover {
+  color: var(--bondcredit-white);
+}
+
+.legal-links {
+  display: flex;
+  gap: 1.8rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;        /* pushes legal links to right */
+  flex-shrink: 0;
+}
+
+.legal-link {
+  font-size: 0.6875rem;
+  color: var(--bondcredit-s2);
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.legal-link:hover {
+  color: var(--bondcredit-white);
+  text-decoration: underline;
+}
+
+/* Mobile fallback */
+@media (max-width: 640px) {
+  .footer-bottom {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+  }
+  .legal-links {
+    justify-content: center;
+  }
+}
+
+/* Logo force white */
+.site-footer img {
+  filter: brightness(0) invert(1);
 }

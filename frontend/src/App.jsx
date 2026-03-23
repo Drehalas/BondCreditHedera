@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { RegistryChatbot } from "./components/RegistryChatbot";
 import BondCreditHeader from "./components/BondCreditHeader";
+import BondCreditFooter from "./components/BondCreditFooter";
 import { actionLabel, defaultThresholds } from "./lib/decision";
 import { buildInitialHistory, generateVolatilitySnapshot } from "./services/mockFeed";
 
@@ -76,7 +77,7 @@ export default function App() {
         }
       } catch (error) {
         setConnected(false);
-        // Fallback to mock data on error
+        // Fallback to data on error
         setHistory((prev) => {
           const snapshot = generateVolatilitySnapshot(prev[prev.length - 1]?.volatility || 24);
           return [...prev.slice(-23), snapshot];
@@ -98,7 +99,7 @@ export default function App() {
         transition={{ duration: 0.6 }}
       >
         <p className="kicker text-uppercase">
-          Hedera Agent Kit · BondCredit
+          Hedera Agent Kit · Hashgraph
           {" "}
           <span 
             className="cursor-pointer focus-ring"
@@ -110,14 +111,13 @@ export default function App() {
               borderRadius: "50%", 
               backgroundColor: connected ? "var(--bondcredit-green)" : "var(--bondcredit-red)"
             }} 
-            title={connected ? "Connected to backend" : "Using mock data"}
-            aria-label={connected ? "Connected to backend" : "Using mock data"}
+            title={connected ? "Connected to backend" : "Using data"}
+            aria-label={connected ? "Connected to backend" : "Using data"}
           />
         </p>
         <h1>Volatility Command Deck</h1>
         <p className="hero-sub">
-          Production-facing operator console for volatility-aware Bonzo vault rebalancing.
-        </p>
+        Bonzo vault rebalancing · live feed        </p>
       </motion.header>
 
       <main className="grid">
@@ -217,12 +217,15 @@ export default function App() {
               </>
             ) : (
               <>
-                ⚠ Connection failed. Using fallback mock data. Start backend: <code>npm start</code>
+                ⚠ Connection failed. Using fallback data. Start backend: <code>npm start</code>
               </>
             )}
           </p>
         </motion.section>
       </main>
+
+      <BondCreditFooter />
+    
     </div>
   );
 }

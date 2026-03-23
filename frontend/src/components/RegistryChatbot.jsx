@@ -143,7 +143,7 @@ export function RegistryChatbot() {
     <section className="registry-chatbot card registry-card">
       <div className="registry-chatbot__head">
         <div>
-          <p className="kicker">HOL Registry · frontend-design</p>
+          <p className="kicker">HOL Registry </p>
           <h2 className="registry-chatbot__title">Registry Relay</h2>
           <p className="muted registry-chatbot__lede">
             Search the public broker index, then open a broker session. Keys stay on the proxy.
@@ -267,7 +267,7 @@ export function RegistryChatbot() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && send()}
-                    placeholder="Ask about volatility, Bonzo, or Hedera…"
+                    placeholder="Ask about volatility, Hashgraph, or Hedera…"
                   />
                   <button type="button" disabled={busy} onClick={send}>
                     Send

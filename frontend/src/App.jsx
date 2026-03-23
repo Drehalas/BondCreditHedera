@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { RegistryChatbot } from "./components/RegistryChatbot";
+import BondCreditHeader from "./components/BondCreditHeader";
 import { actionLabel, defaultThresholds } from "./lib/decision";
 import { buildInitialHistory, generateVolatilitySnapshot } from "./services/mockFeed";
 
@@ -13,7 +14,7 @@ const actionClassMap = {
 
 function ringStyle(volatility) {
   const percentage = Math.min(100, Math.max(0, (volatility / 70) * 100));
-  const color = volatility >= 50 ? "var(--critical)" : volatility >= 30 ? "var(--alert)" : "var(--safe)";
+  const color = getVolatilityColor(volatility);
   return {
     background: `conic-gradient(${color} 0 ${percentage}%, rgba(255,255,255,0.14) ${percentage}% 100%)`
   };
@@ -24,6 +25,13 @@ function thresholdText(volatility) {
   if (volatility < defaultThresholds.maintainMax) return "15%-30% (stable zone)";
   if (volatility < defaultThresholds.widenMax) return "30%-50% (defensive zone)";
   return "> 50% (emergency zone)";
+}
+
+function getVolatilityColor(volatility) {
+  if (volatility < defaultThresholds.tightenMax) return "var(--bondcredit-green)";
+  if (volatility < defaultThresholds.maintainMax) return "var(--bondcredit-lime)";
+  if (volatility < defaultThresholds.widenMax) return "var(--bondcredit-amber)";
+  return "var(--bondcredit-red)";
 }
 
 export default function App() {
@@ -81,6 +89,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      <BondCreditHeader connected={connected} />
       <div className="noise" aria-hidden="true" />
       <motion.header
         className="hero"
@@ -88,17 +97,22 @@ export default function App() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <p className="kicker">
+        <p className="kicker text-uppercase">
           Hedera Agent Kit · BondCredit
           {" "}
-          <span style={{ 
-            display: "inline-block", 
-            marginLeft: "12px",
-            width: "8px", 
-            height: "8px", 
-            borderRadius: "50%", 
-            backgroundColor: connected ? "#10b981" : "#ef4444"
-          }} title={connected ? "Connected to backend" : "Using mock data"} />
+          <span 
+            className="cursor-pointer focus-ring"
+            style={{ 
+              display: "inline-block", 
+              marginLeft: "12px",
+              width: "8px", 
+              height: "8px", 
+              borderRadius: "50%", 
+              backgroundColor: connected ? "var(--bondcredit-green)" : "var(--bondcredit-red)"
+            }} 
+            title={connected ? "Connected to backend" : "Using mock data"}
+            aria-label={connected ? "Connected to backend" : "Using mock data"}
+          />
         </p>
         <h1>Volatility Command Deck</h1>
         <p className="hero-sub">
@@ -124,12 +138,14 @@ export default function App() {
         >
           <div className="card-title-wrap">
             <h2>Current Regime</h2>
-            <span className={`status-pill ${actionClassMap[latest.action]}`}>{actionLabel(latest.action)}</span>
+            <span className={`status-pill ${actionClassMap[latest.action]}`} aria-label={`Current action: ${actionLabel(latest.action)}`}>
+              {actionLabel(latest.action)}
+            </span>
           </div>
           <div className="gauge-wrap">
             <div className="gauge-ring" style={ringStyle(latest.volatility)}>
               <div className="gauge-core">
-                <div className="big-number">{latest.volatility}%</div>
+                <div className="big-number text-mono">{latest.volatility}%</div>
                 <div className="muted">1h realized vol</div>
               </div>
             </div>
@@ -151,9 +167,9 @@ export default function App() {
             <polyline points={sparkline} />
           </svg>
           <div className="threshold-lines">
-            <div><span>15%</span></div>
-            <div><span>30%</span></div>
-            <div><span>50%</span></div>
+            <div><span className="text-green">15%</span></div>
+            <div><span className="text-lime">30%</span></div>
+            <div><span className="text-amber">50%</span></div>
           </div>
         </motion.section>
 
@@ -165,12 +181,12 @@ export default function App() {
         >
           <h2>Action Timeline</h2>
           <ul className="timeline">
-            {[...history].reverse().slice(0, 8).map((item) => (
-              <li key={item.timestamp}>
+            {[...history].reverse().slice(0, 8).map((item, index) => (
+              <li key={`${item.timestamp}-${index}`}>
                 <span className={`dot ${actionClassMap[item.action]}`} />
                 <div>
-                  <p className="mono">{new Date(item.timestamp).toLocaleTimeString()}</p>
-                  <p>{item.volatility}% {"->"} {actionLabel(item.action)}</p>
+                  <p className="text-mono">{new Date(item.timestamp).toLocaleTimeString()}</p>
+                  <p><span className="text-mono">{item.volatility}%</span> {"->"} {actionLabel(item.action)}</p>
                 </div>
               </li>
             ))}

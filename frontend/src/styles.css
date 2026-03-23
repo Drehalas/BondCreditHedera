@@ -1,12 +1,29 @@
 :root {
-  --bg: #090e1a;
+  /* BondCredit Brand Colors - Exact from main website */
+  --bondcredit-blue: #27279E;
+  --bondcredit-lime: #bced62;
+  --bondcredit-green: #00d180;
+  --bondcredit-red: #f04c74;
+  --bondcredit-amber: #f4b343;
+  --bondcredit-white: #ffffff;
+  --bondcredit-s1: #e8f2ff;
+  --bondcredit-s2: #a3a3a3;
+  --bondcredit-bg: #000000;
+  --bondcredit-bg2: #0a0a0a;
+  --bondcredit-card: #1a1a1a;
+  --bondcredit-card2: #2a2a2a;
+  --bondcredit-border: rgba(255, 255, 255, 0.1);
+  --bondcredit-border2: rgba(255, 255, 255, 0.2);
+  
+  /* Legacy color mapping for compatibility */
+  --bg: var(--bondcredit-bg);
   --panel: rgba(10, 21, 42, 0.7);
-  --text: #e8f2ff;
-  --muted: #90a4c5;
-  --safe: #12d4b6;
-  --alert: #f4b343;
-  --critical: #f04c74;
-  --line: rgba(186, 205, 241, 0.18);
+  --text: var(--bondcredit-s1);
+  --muted: var(--bondcredit-s2);
+  --safe: var(--bondcredit-green);
+  --alert: var(--bondcredit-amber);
+  --critical: var(--bondcredit-red);
+  --line: var(--bondcredit-border);
 }
 
 * {
@@ -20,14 +37,13 @@ body,
   min-height: 100%;
 }
 
+/* Import IBM Plex Mono for numbers and technical data */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap');
+
 body {
-  background:
-    radial-gradient(circle at 12% 18%, rgba(31, 178, 255, 0.15), transparent 36%),
-    radial-gradient(circle at 82% 18%, rgba(255, 87, 165, 0.14), transparent 42%),
-    radial-gradient(circle at 54% 90%, rgba(18, 212, 182, 0.13), transparent 42%),
-    var(--bg);
-  color: var(--text);
-  font-family: "Bricolage Grotesque", sans-serif;
+  background: var(--bondcredit-bg);
+  color: var(--bondcredit-white);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .noise {
@@ -40,39 +56,44 @@ body {
 }
 
 .app-shell {
-  padding: 2.5rem 4.5vw 4rem;
+  padding: 6rem 4.5vw 4rem;
   position: relative;
 }
 
 .hero {
   max-width: 64rem;
   margin-bottom: 2rem;
+  padding-top: 1rem;
 }
 
 .kicker {
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-size: 0.72rem;
-  color: var(--muted);
-  margin: 0;
+  color: var(--bondcredit-s2);
+  margin: 0 0 0.5rem;
+  font-weight: 600;
 }
 
 h1 {
   margin: 0.45rem 0 0.65rem;
   font-size: clamp(2rem, 6vw, 4rem);
   line-height: 0.96;
+  font-weight: 800;
+  color: var(--bondcredit-white);
 }
 
 .hero-sub {
   margin: 0;
-  color: var(--muted);
+  color: var(--bondcredit-s2);
   font-size: 1.04rem;
+  line-height: 1.5;
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .registry-chatbot-wrap {
@@ -80,12 +101,18 @@ h1 {
 }
 
 .card {
-  border: 1px solid var(--line);
-  background: linear-gradient(170deg, rgba(31, 48, 77, 0.62), rgba(11, 17, 31, 0.75));
-  border-radius: 1.2rem;
-  padding: 1.2rem;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.22);
+  background: var(--bondcredit-card);
+  border: 1px solid var(--bondcredit-border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.card h2 {
+  margin: 0 0 1rem;
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: var(--bondcredit-white);
 }
 
 .card h2 {
@@ -96,6 +123,428 @@ h1 {
 .primary,
 .dashboard-panel {
   grid-column: span 6;
+}
+
+/* BondCredit Brand Classes - Based on SKILL.md */
+
+/* Typography Classes */
+.text-mono {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.text-uppercase {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.text-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.text-ticker {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Color Classes */
+.text-lime {
+  color: var(--bondcredit-lime);
+}
+
+.text-green {
+  color: var(--bondcredit-green);
+}
+
+.text-red {
+  color: var(--bondcredit-red);
+}
+
+.text-amber {
+  color: var(--bondcredit-amber);
+}
+
+.text-blue {
+  color: var(--bondcredit-blue);
+}
+
+/* Background Classes */
+.bg-lime {
+  background-color: var(--bondcredit-lime);
+}
+
+.bg-green {
+  background-color: var(--bondcredit-green);
+}
+
+.bg-red {
+  background-color: var(--bondcredit-red);
+}
+
+.bg-amber {
+  background-color: var(--bondcredit-amber);
+}
+
+.bg-blue {
+  background-color: var(--bondcredit-blue);
+}
+
+/* Flex Utilities */
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+/* Spacing Utilities */
+.gap-3 {
+  gap: 0.75rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.gap-6 {
+  gap: 1.5rem;
+}
+
+.gap-8 {
+  gap: 2rem;
+}
+
+/* Accessibility */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.focus-ring:focus {
+  outline: 2px solid var(--bondcredit-lime);
+  outline-offset: 2px;
+}
+
+/* Logo Guidelines */
+.logo-min-size {
+  min-height: 32px;
+  min-width: 80px;
+}
+
+.logo-clear-space {
+  padding: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .app-shell {
+    padding: 1.5rem 3vw 2rem;
+  }
+  
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  
+  .primary,
+  .dashboard-panel {
+    grid-column: span 4;
+  }
+}
+
+/* Status Pills - BondCredit Brand */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+}
+
+.status-pill.is-safe {
+  background-color: var(--bondcredit-green);
+  color: var(--bondcredit-bg);
+}
+
+.status-pill.is-neutral {
+  background-color: var(--bondcredit-lime);
+  color: var(--bondcredit-bg);
+}
+
+.status-pill.is-alert {
+  background-color: var(--bondcredit-amber);
+  color: var(--bondcredit-bg);
+}
+
+.status-pill.is-critical {
+  background-color: var(--bondcredit-red);
+  color: var(--bondcredit-white);
+}
+
+/* Big Number Styling */
+.big-number {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+/* Card Title Wrap */
+.card-title-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+/* Gauge Styling */
+.gauge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.gauge-ring {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.gauge-core {
+  background: var(--bondcredit-card);
+  border-radius: 50%;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Timeline Styling */
+.timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.timeline li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--bondcredit-border);
+}
+
+.timeline li:last-child {
+  border-bottom: none;
+}
+
+.timeline .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 0.5rem;
+  flex-shrink: 0;
+}
+
+.timeline .dot.is-safe {
+  background-color: var(--bondcredit-green);
+}
+
+.timeline .dot.is-neutral {
+  background-color: var(--bondcredit-lime);
+}
+
+.timeline .dot.is-alert {
+  background-color: var(--bondcredit-amber);
+}
+
+.timeline .dot.is-critical {
+  background-color: var(--bondcredit-red);
+}
+
+/* Sparkline */
+.sparkline {
+  width: 100%;
+  height: 100px;
+  stroke: var(--bondcredit-lime);
+  stroke-width: 2;
+  fill: none;
+}
+
+/* Threshold Lines */
+.threshold-lines {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  font-size: 0.6875rem;
+  color: var(--bondcredit-s2);
+}
+
+/* Form Controls */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.field label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.field input {
+  background: var(--bondcredit-card2);
+  border: 1px solid var(--bondcredit-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  color: var(--bondcredit-white);
+  font-size: 0.875rem;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--bondcredit-lime);
+  box-shadow: 0 0 0 2px rgba(188, 237, 98, 0.2);
+}
+
+/* BondCredit Header Styles */
+.wt-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bondcredit-bg2);
+  border-bottom: 1px solid var(--bondcredit-border);
+  padding: 0.75rem 0;
+}
+
+.wt-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-logo {
+  height: 1rem;
+  width: auto;
+  min-height: 32px;
+  min-width: 80px;
+  display: block;
+}
+
+.btn-lime {
+  background: var(--bondcredit-lime);
+  color: var(--bondcredit-bg);
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 6px 14px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.btn-lime:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.theme-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--bondcredit-border);
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  color: var(--bondcredit-s2);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.theme-toggle-btn:hover {
+  color: var(--bondcredit-white);
+  border-color: var(--bondcredit-s2);
+  background: var(--bondcredit-card2);
+}
+
+/* Navigation links */
+.nav-link {
+  color: var(--bondcredit-s2);
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.nav-link:hover {
+  color: var(--bondcredit-white);
+  background: var(--bondcredit-card2);
+}
+
+.nav-link.active {
+  color: var(--bondcredit-white);
+  background: var(--bondcredit-card2);
+}
+
+/* Mobile menu animation */
+@media (max-width: 1024px) {
+  .wt-nav {
+    padding: 0.75rem 0;
+  }
+  
+  .wt-container {
+    padding: 0 0.75rem;
+  }
+}
+
+/* Adjust app-shell padding to account for fixed header */
+.app-shell {
+  padding-top: 3.5rem; /* Reduced for cleaner header spacing */
+}
+
+/* Header link hover effects */
+.wt-nav a:hover {
+  color: var(--bondcredit-white);
+}
+
+.wt-nav .bg-bondcredit-card2:hover {
+  background: var(--bondcredit-card) !important;
 }
 
 .card-title-wrap {

@@ -2,5 +2,7 @@ node_modules/
 .cursor/
 package-lock.json
 .env
+.env.example
+.env.local
 *.log
 frontend/dist/
